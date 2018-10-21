@@ -16,3 +16,5 @@ static inline void _safe_cuda_call(cudaError err, const char* msg, const char* f
 }
 
 #define SAFE_CALL(call,msg) _safe_cuda_call(call,msg,__FILE__,__LINE__)
+
+#endif
