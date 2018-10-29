@@ -11,12 +11,7 @@
 
 using namespace std;
 
-<<<<<<< HEAD
 __global__ void equalizer_kernel(unsigned char* input, unsigned char* output, int width, int height, int grayWidthStep, int *h_s)
-=======
-//
-__global__ void saveImage(unsigned char* input, unsigned char* output, int width, int height, int step, int *temp)
->>>>>>> 925e48891396f60c19a44eec3cdcd22282305ea4
 {
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
@@ -32,14 +27,7 @@ __global__ void saveImage(unsigned char* input, unsigned char* output, int width
 __global__ void createHistogram_kernel(unsigned char* input, unsigned char* output, int width, int height, int colorWidthStep, float grayImageSize, int *h_s) {
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
-<<<<<<< HEAD
 	int color_tid = yIndex * colorWidthStep + xIndex;
-=======
-	int color_tid = yIndex * step + xIndex;
-
-  __shared__ int temp_s[256];
-
->>>>>>> 925e48891396f60c19a44eec3cdcd22282305ea4
 	int xyIndex = threadIdx.x + threadIdx.y * blockDim.x;
 
 	__shared__ int temp[256];
@@ -55,11 +43,7 @@ __global__ void createHistogram_kernel(unsigned char* input, unsigned char* outp
 	__syncthreads();
 
 	if(xyIndex < 256) {
-<<<<<<< HEAD
 		atomicAdd(&h_s[xyIndex], temp[xyIndex]);
-=======
-		atomicAdd(&temp[xyIndex], temp_s[xyIndex]);
->>>>>>> 925e48891396f60c19a44eec3cdcd22282305ea4
 	}
 }
 
