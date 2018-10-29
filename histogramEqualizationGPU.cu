@@ -13,7 +13,7 @@
 using namespace std;
 
 //
-__global__ void saveImage(unsigned char* input, unsigned char* output, int width, int height, int step, int *tem)
+__global__ void saveImage(unsigned char* input, unsigned char* output, int width, int height, int step, int *temp)
 {
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
@@ -32,24 +32,24 @@ __global__ void generateHistogram(unsigned char* input, unsigned char* output, i
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 	int color_tid = yIndex * step + xIndex;
 
-  __shared__ int temp[256];
+  __shared__ int temp_s[256];
 
 	int xyIndex = threadIdx.x + threadIdx.y * blockDim.x;
 
 	if(xyIndex < 256) {
-		temp[xyIndex] = 0;
+		temp_s[xyIndex] = 0;
 	}
   //Creacion de histograma
 	__syncthreads();
 
 	if(xIndex < width && yIndex < height) {
-		atomicAdd(&temp[input[color_tid]], 1);
+		atomicAdd(&temp_s[input[color_tid]], 1);
 	}
 
 	__syncthreads();
 
 	if(xyIndex < 256) {
-		atomicAdd(&temp[xyIndex], temp[xyIndex]);
+		atomicAdd(&temp[xyIndex], temp_s[xyIndex]);
 	}
 }
 
