@@ -16,30 +16,32 @@ __global__ void equalizer_kernel(unsigned char* input, unsigned char* output, in
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 	const int gray_tid = yIndex * grayWidthStep + xIndex;
-
 	if ((xIndex < width) && (yIndex < height))
 	{
 		output[gray_tid] = h_s[input[gray_tid]];
 	}
 }
 
-//Creación de historgrama
+//Creacion de histograma
 __global__ void createHistogram_kernel(unsigned char* input, unsigned char* output, int width, int height, int colorWidthStep, float grayImageSize, int *h_s) {
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
 	const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
+
 	int color_tid = yIndex * colorWidthStep + xIndex;
+
 	int xyIndex = threadIdx.x + threadIdx.y * blockDim.x;
 
 	__shared__ int temp[256];
 
 	if(xyIndex < 256) {
-		temp_s[xyIndex] = 0;
+		temp[xyIndex] = 0;
 	}
 	__syncthreads();
 
 	if(xIndex < width && yIndex < height) {
-		atomicAdd(&temp_s[input[color_tid]], 1);
+		atomicAdd(&temp[input[color_tid]], 1);
 	}
+
 	__syncthreads();
 
 	if(xyIndex < 256) {
@@ -52,7 +54,7 @@ __global__ void normalizeHistogram(unsigned char* input, unsigned char* output, 
 
 	__shared__ int temporal[256];
 
-	if(xyIndex < 256 && blockIdx.x == 0 && blockIdx.y == 0) {
+	if(xyIndex < 256 && blockIdx.x == 0 && blockIdx.y == 0) { 
 		temporal[xyIndex] = 0;
 		temporal[xyIndex] = h_s[xyIndex];
 		__syncthreads();
@@ -64,7 +66,7 @@ __global__ void normalizeHistogram(unsigned char* input, unsigned char* output, 
 		h_s[xyIndex] = normVar*255/grayImageSize;
 	}
 }
-
+//Parte del codigo es de la tarea 2
 void equalizer(const cv::Mat& input, cv::Mat& output)
 {
 	cout << "Input image step: " << input.step << " rows: " << input.rows << " cols: " << input.cols << endl;
@@ -72,7 +74,6 @@ void equalizer(const cv::Mat& input, cv::Mat& output)
 	float grayImageSize = input.rows * input.cols;
 
 	unsigned char *d_input, *d_output;
-
 
 	int * h_s ;
 	int * temp;
@@ -92,7 +93,7 @@ void equalizer(const cv::Mat& input, cv::Mat& output)
 
 	int xBlock = 16;
 	int yBlock = 16;
-	// Specify a reasonable block size
+
 	const dim3 block(xBlock, yBlock);
 
 	const dim3 grid((int)ceil((float)input.cols / block.x), (int)ceil((float)input.rows/ block.y));
@@ -129,7 +130,6 @@ int main(int argc, char *argv[])
   	else
   		imagePath = argv[1];
 
-	// Read input image from the disk
 	cv::Mat input = cv::imread(imagePath, CV_LOAD_IMAGE_COLOR);
 
 	if (input.empty())
@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	//Create output image
 	cv::Mat temp(input.rows, input.cols, CV_8UC1);
 	cv::Mat output(input.rows, input.cols, CV_8UC1);
 
